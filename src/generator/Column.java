@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.ss.util.CellAddress;
 
 /**
  *
@@ -25,6 +23,10 @@ public class Column{
     private final List<Relation> relations;
     
     private final String type;
+    
+    private static final int NUMBERS = 0;
+    private static final int LOWERCASE = 1;
+    private static final int UPPERCASE= 2;
 
     
     public Column(String name, String max, String min, int length, boolean numbers, List<Relation> relations, String type){
@@ -59,7 +61,7 @@ public class Column{
     
     private String randomValue(){
         Random generator = new Random();
-        String ret = null;
+        String ret = "";
         switch (type){
             case "Integer":
             {
@@ -75,6 +77,55 @@ public class Column{
             }
             case "String":
             {
+                for (int i = 0; i < length; i++){
+                    int rand;
+                    if (numbers == true){
+                        int t = generator.nextInt(3);
+                        System.out.println(t);
+                        switch (t){
+                            case NUMBERS:
+                            {
+                                rand = generator.nextInt(10);
+                                rand += '0';
+                                break;
+                            }
+                            default:
+                            {
+                                rand = generator.nextInt(26);
+                                switch (t){
+                                    case LOWERCASE:
+                                    {
+                                        rand += 'a';
+                                        break;
+                                    }
+                                    case UPPERCASE:
+                                    {
+                                        rand += 'A';
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    } else{
+                        int t = generator.nextInt(2) + 1;
+                        rand = generator.nextInt(26);
+                        switch (t){
+                            case LOWERCASE:
+                            {
+                                rand += 'a';
+                                break;
+                            }
+                            case UPPERCASE:
+                            {
+                                rand += 'A';
+                                break;
+                            }
+                        }      
+                    }
+                    char c = (char) rand;
+                    ret += c;
+                }
                 break;
             }
         }
