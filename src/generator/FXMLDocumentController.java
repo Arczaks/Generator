@@ -32,7 +32,6 @@ import org.w3c.dom.Element;
 import  org.apache.poi.hssf.usermodel.HSSFSheet;
 import  org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import  org.apache.poi.hssf.usermodel.HSSFRow;
-import  org.apache.poi.hssf.usermodel.HSSFCell;
 
 /**
  *
@@ -115,7 +114,7 @@ public class FXMLDocumentController implements Initializable {
                             .getElementsByTagName("numbers")
                             .item(0)
                             .getTextContent());
-                    
+                                  
                     List<Relation> relations = new ArrayList();
                     if (eElement.hasAttribute("relations")){
                         NodeList rList = eElement.getElementsByTagName("relations");
