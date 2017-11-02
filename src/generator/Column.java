@@ -90,7 +90,8 @@ public class Column{
                 + "min value: " + minValue + "\n"
                 + "lenth: " + length + "\n"
                 + "numbers? " + numbers + "\n"
-                + relations.toString();
+                + relations.toString()
+                +"aaa";
     }
     
 }
