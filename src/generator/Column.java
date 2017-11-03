@@ -142,6 +142,7 @@ public class Column{
             case "Date" :
             {
                 ret = getNextDate(new DateType(maxValue), new DateType(minValue), generator);
+                //System.out.println("max " + new DateType(maxValue).toString() + " min " + new DateType(minValue).toString());
                 break;
             }
         }
@@ -149,7 +150,8 @@ public class Column{
     }
     
     private String getNextDate(DateType max, DateType min, Random generator){
-        return min.getNextDate(generator.nextInt(max.getDifference(min))).toString();
+        //System.out.println("Wylosowana: " + min.getDifference(max));
+        return min.getNextDate(generator.nextInt(min.getDifference(max))).toString();
     }
     
     @Override
