@@ -106,11 +106,7 @@ public class FXMLDocumentController implements Initializable {
                             .getElementsByTagName("name")
                             .item(0)
                             .getTextContent();
-                    int length = Integer.parseInt(eElement
-                            .getElementsByTagName("length")
-                            .item(0)
-                            .getTextContent());
-                    boolean numbers = Boolean.getBoolean(eElement
+                    Boolean numbers = Boolean.getBoolean(eElement
                             .getElementsByTagName("numbers")
                             .item(0)
                             .getTextContent());
@@ -153,7 +149,7 @@ public class FXMLDocumentController implements Initializable {
                             .item(0)
                             .getTextContent();
                     
-                    list.add(new  Column(name, max, min, length, numbers, relations, type));
+                    list.add(new  Column(name, max, min, numbers, relations, type));
 
                 }
             }
