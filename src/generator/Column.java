@@ -16,10 +16,9 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
  */
 public class Column{
     private final String name;
-    private final  String maxValue;
-    private final  String minValue;
-    private final int length;
-    private final boolean numbers;
+    private final String maxValue;
+    private final String minValue;
+    private final Boolean numbers;
     private final List<Relation> relations;
     
     private final String type;
@@ -29,9 +28,9 @@ public class Column{
     private static final int UPPERCASE= 2;
 
     
-    public Column(String name, String max, String min, int length, boolean numbers, List<Relation> relations, String type){
+    public Column(String name, String max, String min, Boolean numbers, List<Relation> relations, String type){
         this.name = name;
-        if (type.equals("Integer") || type.equals("Float")){
+        if (!"Date".equals(type)){
             Float tMax = Float.parseFloat(max);
             Float tMin = Float.parseFloat(min);
             if (tMax < tMin){
@@ -42,11 +41,14 @@ public class Column{
         }
         maxValue = max;
         minValue = min;
-        this.length = length;
         this.numbers = numbers;
         this.relations = new ArrayList();
         this.relations.addAll(relations);
         this.type = type;
+        
+//        if ("Date".equals(type)){
+//            this.dateTest();
+//        }
     }
     
     public void Generate(List<HSSFRow> sheet, int index){
@@ -77,6 +79,7 @@ public class Column{
             }
             case "String":
             {
+                int length = generator.nextInt(Integer.parseInt(maxValue) - Integer.parseInt(minValue)) + Integer.parseInt(minValue);
                 for (int i = 0; i < length; i++){
                     int rand;
                     if (numbers == true){
@@ -128,6 +131,10 @@ public class Column{
                 }
                 break;
             }
+            case "Date" :
+            {
+                break;
+            }
         }
         return ret;
     }
@@ -139,9 +146,14 @@ public class Column{
                 + "type: " + type + "\n"
                 + "max value: " + maxValue + "\n"
                 + "min value: " + minValue + "\n"
-                + "lenth: " + length + "\n"
                 + "numbers? " + numbers + "\n"
                 + relations.toString();
+    }
+    
+    private void dateTest(){
+        DateType max = new DateType(maxValue);
+        DateType min = new DateType(minValue);
+        System.out.println("+++ date +++\n" + max.toString() + "\n" + min.toString());
     }
     
 }
