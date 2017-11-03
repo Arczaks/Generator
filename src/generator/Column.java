@@ -38,6 +38,14 @@ public class Column{
                 max = min;
                 min = temp;
             }
+        } else{
+            DateType tMax = new DateType(max);
+            DateType tMin = new DateType(min);
+            if (tMax.compareTo(tMin) < 0){
+                String temp = max;
+                max = min;
+                min = temp;
+            } 
         }
         maxValue = max;
         minValue = min;
@@ -133,10 +141,15 @@ public class Column{
             }
             case "Date" :
             {
+                ret = getNextDate(new DateType(maxValue), new DateType(minValue), generator);
                 break;
             }
         }
         return ret;
+    }
+    
+    private String getNextDate(DateType max, DateType min, Random generator){
+        return min.getNextDate(generator.nextInt(max.getDifference(min))).toString();
     }
     
     @Override
