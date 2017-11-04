@@ -64,15 +64,12 @@ public class DateType implements Comparable<DateType>{
 
     public int getDifference(DateType date) {
         int wynik = (year - date.getYear()) * 365;
-      //  System.out.println("lata " + wynik);
         int p = month + 1;
         int d = date.getMonth() - 1;
         for (int i = month + 1; i < date.getMonth() - 1; i++){
-            wynik += DAYS_IN_MONTH[i];
+            wynik += DAYS_IN_MONTH[i - 1];
         }
-       // System.out.println("miesiace " + wynik);
-        wynik += DAYS_IN_MONTH[month] - day + date.getDay(); 
-       // System.out.println("dni " + wynik);
+        wynik += DAYS_IN_MONTH[month - 1] - day + date.getDay(); 
         return wynik;
     }
     
@@ -92,23 +89,29 @@ public class DateType implements Comparable<DateType>{
         int newYear = year;
         
         int tempShift = shift;
-        for (int i = 0; i < (shift % 365 - 365); i++){
+        for (int i = 0; i < (shift / 365); i++){
             newYear++;
             tempShift -= 365;
         }
-        
-        if (DAYS_IN_MONTH[month] - day < tempShift){
+         // zle
+        if (DAYS_IN_MONTH[month - 1] - day < tempShift){
             newDay = 1;
-            tempShift -= day;
+            tempShift -= DAYS_IN_MONTH[month - 1] - day;
             newMonth++;
-            while (tempShift > DAYS_IN_MONTH[newMonth]){
-                tempShift -= DAYS_IN_MONTH[newMonth];
+            if ( newMonth > 12){
+                newMonth = 1;
+                newYear++;
+            }
+            while (tempShift > DAYS_IN_MONTH[newMonth - 1]){
+                tempShift -= DAYS_IN_MONTH[newMonth - 1];
                 newMonth++;
             }
         }
         newDay += tempShift;
  
-        
+        if (newDay <= 0){
+          System.out.println("shift: " + shift + " old day: " + this.toString() + " new day: " + newDay + "." + newMonth + "." + newYear);
+        }
         return new DateType(newDay, newMonth, newYear);
     }
         
