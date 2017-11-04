@@ -149,7 +149,12 @@ public class FXMLDocumentController implements Initializable {
                             .item(0)
                             .getTextContent();
                     
-                    list.add(new  Column(name, max, min, numbers, relations, type));
+                    String parameter = eElement
+                            .getElementsByTagName("parameter")
+                            .item(0)
+                            .getTextContent();
+                    
+                    list.add(new  Column(name, max, min, numbers, relations, type, parameter));
 
                 }
             }
