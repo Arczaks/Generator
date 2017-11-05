@@ -64,12 +64,10 @@ public class DateType implements Comparable<DateType>{
 
     public int getDifference(DateType date) {
         int wynik = (year - date.getYear()) * 365;
-        int p = month + 1;
-        int d = date.getMonth() - 1;
         for (int i = month + 1; i < date.getMonth() - 1; i++){
             wynik += DAYS_IN_MONTH[i - 1];
         }
-        wynik += DAYS_IN_MONTH[month - 1] - day + date.getDay(); 
+        wynik += DAYS_IN_MONTH[month - 1] - day - date.getDay(); 
         return wynik;
     }
     
@@ -93,18 +91,22 @@ public class DateType implements Comparable<DateType>{
             newYear++;
             tempShift -= 365;
         }
-         // zle
+
         if (DAYS_IN_MONTH[month - 1] - day < tempShift){
             newDay = 1;
             tempShift -= DAYS_IN_MONTH[month - 1] - day;
             newMonth++;
             if ( newMonth > 12){
-                newMonth = 1;
-                newYear++;
-            }
+                    newMonth = 1;
+                    newYear++;
+                }
             while (tempShift > DAYS_IN_MONTH[newMonth - 1]){
                 tempShift -= DAYS_IN_MONTH[newMonth - 1];
                 newMonth++;
+                if ( newMonth > 12){
+                    newMonth = 1;
+                    newYear++;
+                }
             }
         }
         newDay += tempShift;
