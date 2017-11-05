@@ -11,8 +11,8 @@ package generator;
  */
 public class Relation {
     
-    private enum Type{
-        GREATER, LESS, IS;
+    public enum Type{
+        GREATER, LESS, IS, ONE_OF;
     }
     
     private final String element;
@@ -39,5 +39,17 @@ public class Relation {
                 + "typ: "+ type  + "\n"
                 + "dir: "  + dir + "\n"
                 + "element: " + element; 
+    }
+    
+    public String getElement(){
+        return element;   
+    }
+    
+    public String getDir() {
+        return dir;
+    }
+    
+    public Type getType() {
+        return type;
     }
 }
