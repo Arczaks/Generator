@@ -5,12 +5,18 @@
  */
 package generator;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
 
 /**
  *
@@ -56,6 +62,9 @@ public class Column{
         this.numbers = numbers;
         this.relations = new ArrayList();
         this.relations.addAll(relations);
+        if (this.relations.isEmpty()){
+            this.relations.add(new Relation());
+        }
         this.type = type;
         this.parameter = parameter;
         
@@ -70,7 +79,7 @@ public class Column{
         sheet.forEach((c) -> {
             if (c.getRowNum() != 0){
                 try {
-                    c.createCell(index).setCellValue(randomValue());
+                    c.createCell(index).setCellValue(randomValue(c.getRowNum(), sheet.get(0).getSheet()));
                 } catch (TooMuchQuantityException ex) {
                     Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -79,91 +88,122 @@ public class Column{
       
     }
     
-    private String randomValue() throws TooMuchQuantityException{
-        Random generator = new Random();
+    private String randomValue(int index, HSSFSheet sheet) throws TooMuchQuantityException{
         String ret = "";
-        while (!isCorrect(ret)){
-            switch (type){
-                case "Integer":
-                {
-                    if (parameter.equals("id")){
-                        ret = lastValue.toString();
-                        lastValue++; 
-                    } else {
-                        Integer temp = generator.nextInt(Integer.parseInt(maxValue) - Integer.parseInt(minValue)) + Integer.parseInt(minValue);
-                        ret = temp.toString();
-                    }
-                    break;
-                }
-                case "Float":
-                {
-                    Float temp = generator.nextFloat() * Float.parseFloat(maxValue) + Float.parseFloat(minValue);             
-                    ret = temp.toString();
-                    break;
-                }
-                case "String":
-                {
-                    int length = generator.nextInt(Integer.parseInt(maxValue) - Integer.parseInt(minValue)) + Integer.parseInt(minValue);
-                    for (int i = 0; i < length; i++){
-                        int rand;
-                        if (numbers == true){
-                            int t = generator.nextInt(3);
-                            System.out.println(t);
-                            switch (t){
-                                case NUMBERS:
-                                {
-                                    rand = generator.nextInt(10);
-                                    rand += '0';
-                                    break;
-                                }
-                                default:
-                                {
-                                    rand = generator.nextInt(26);
-                                    switch (t){
-                                        case LOWERCASE:
-                                        {
-                                            rand += 'a';
-                                            break;
-                                        }
-                                        case UPPERCASE:
-                                        {
-                                            rand += 'A';
-                                            break;
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
-                        } else{
-                            int t = generator.nextInt(2) + 1;
-                            rand = generator.nextInt(26);
-                            switch (t){
-                                case LOWERCASE:
-                                {
-                                    rand += 'a';
-                                    break;
-                                }
-                                case UPPERCASE:
-                                {
-                                    rand += 'A';
-                                    break;
-                                }
-                            }      
+        if (!(relations.get(0).getType() == Relation.Type.IS)) {
+            Random generator = new Random();
+            while (!isCorrect(ret, index, sheet)){
+                switch (type){
+                    case "Integer":
+                    {
+                        if (parameter.equals("id")){
+                            ret = lastValue.toString();
+                            lastValue++; 
+                        } else {
+                            Integer temp = generator.nextInt(Integer.parseInt(maxValue) - Integer.parseInt(minValue)) + Integer.parseInt(minValue);
+                            ret = temp.toString();
                         }
-                        char c = (char) rand;
-                        ret += c;
+                        break;
                     }
-                    break;
+                    case "Float":
+                    {
+                        Float temp = generator.nextFloat() *  ( Float.parseFloat(maxValue) - Float.parseFloat(minValue)) + Float.parseFloat(minValue);             
+                        ret = temp.toString();
+                        break;
+                    }
+                    case "String":
+                    {
+                        int length = generator.nextInt(Integer.parseInt(maxValue) - Integer.parseInt(minValue)) + Integer.parseInt(minValue);
+                        for (int i = 0; i < length; i++){
+                            int rand;
+                            if (numbers == true){
+                                int t = generator.nextInt(3);
+                                System.out.println(t);
+                                switch (t){
+                                    case NUMBERS:
+                                    {
+                                        rand = generator.nextInt(10);
+                                        rand += '0';
+                                        break;
+                                    }
+                                    default:
+                                    {
+                                        rand = generator.nextInt(26);
+                                        switch (t){
+                                            case LOWERCASE:
+                                            {
+                                                rand += 'a';
+                                                break;
+                                            }
+                                            case UPPERCASE:
+                                            {
+                                                rand += 'A';
+                                                break;
+                                            }
+                                        }
+                                        break;
+                                    }
+                                }
+                            } else{
+                                int t = generator.nextInt(2) + 1;
+                                rand = generator.nextInt(26);
+                                switch (t){
+                                    case LOWERCASE:
+                                    {
+                                        rand += 'a';
+                                        break;
+                                    }
+                                    case UPPERCASE:
+                                    {
+                                        rand += 'A';
+                                        break;
+                                    }
+                                }      
+                            }
+                            char c = (char) rand;
+                            ret += c;
+                        }
+                        break;
+                    }
+                    case "Date" :
+                    {
+                        ret = getNextDate(new DateType(maxValue), new DateType(minValue), generator);
+                        //System.out.println("max " + new DateType(maxValue).toString() + " min " + new DateType(minValue).toString());
+                        break;
+                    }
                 }
-                case "Date" :
-                {
-                    ret = getNextDate(new DateType(maxValue), new DateType(minValue), generator);
-                    //System.out.println("max " + new DateType(maxValue).toString() + " min " + new DateType(minValue).toString());
-                    break;
+            }
+        } else { 
+            InputStream inp = null;
+            try {
+                inp = new FileInputStream(relations.get(0).getDir());
+                try {
+                    HSSFWorkbook wb = new HSSFWorkbook(inp);
+                    HSSFSheet sheet_temp = wb.getSheetAt(0);
+                    int columnIndex = 0;
+                    for (int i = 0; i < sheet.getRow(0).getLastCellNum(); i++) {
+                        //System.out.println(" sheet " + sheet.getRow(0).getCell(i).getStringCellValue() + " rel " + relations.get(0).getElement());
+                        if (sheet.getRow(0).getCell(i).getStringCellValue().equals(relations.get(0).getElement())){
+                            columnIndex = i;
+                            break;
+                        }
+                    }
+                    ret = sheet.getRow(index).getCell(columnIndex).getStringCellValue();
+                } catch (IOException ex) {
+                    Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                try {
+                    inp.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
         return ret;
+        
     }
     
     private String getNextDate(DateType max, DateType min, Random generator){
@@ -188,37 +228,147 @@ public class Column{
         System.out.println("+++ date +++\n" + max.toString() + "\n" + min.toString());
     }
     
-    private boolean isCorrect(String value) throws TooMuchQuantityException{
+    private boolean isCorrect(String value, int index, HSSFSheet sheet) throws TooMuchQuantityException{
+        boolean ret = false;
         if (value.equals("")){
             return false;
         } else {
             switch (parameter){
                 case "id":
                 {
-                    return true;
+                    ret = true;
+                    break;
                 }
                 case "inc":
                 {
+                    String temp = minValue;
                     minValue = value;
                     if (minValue.equals(maxValue)){
-                        throw new TooMuchQuantityException("inc");
+                        minValue = temp;
                     }
-                    return true;
+                    ret = true;
+                    break;
                 }
                 case "dec":
                 {
+                    String temp = maxValue;
                     maxValue = value;
                     if (minValue.equals(maxValue)){
-                        throw new TooMuchQuantityException("dec");
+                        maxValue = temp;
                     }
-                    return true;
+                    ret = true;
+                    break;
                 }
                 case "null":
                 {
-                    return true;
+                    ret = true;
+                    break;
+                }
+            }
+            
+        }
+        if (ret){
+            if (relations.get(0).getType() == Relation.Type.GREATER || relations.get(0).getType() == Relation.Type.LESS){
+                InputStream inp = null;
+                try {
+                    if (!"HERE".equals(relations.get(0).getDir())) {
+                        inp = new FileInputStream(relations.get(0).getDir());
+                    }
+                    try {
+                        HSSFWorkbook wb;
+                        HSSFSheet sheet_temp;
+                        if (inp == null){
+                            sheet_temp = sheet;
+                        } else {
+                            wb = new HSSFWorkbook(inp); 
+                            sheet_temp = wb.getSheetAt(0);
+                        }
+ 
+                        int columnIndex = 0;
+                        for (int i = 0; i < sheet_temp.getRow(0).getLastCellNum(); i++) {
+                            //System.out.println(" sheet " + sheet.getRow(0).getCell(i).getStringCellValue() + " rel " + relations.get(0).getElement());
+                            if (sheet_temp.getRow(0).getCell(i).getStringCellValue().equals(relations.get(0).getElement())){
+                                columnIndex = i;
+                                break;
+                            }
+                        }
+                        
+                        switch (this.type){
+                            case "Integer":
+                            {
+                                if (relations.get(0).getType() == Relation.Type.GREATER){
+                                    ret = Integer.parseInt(sheet_temp
+                                            .getRow(index)
+                                            .getCell(columnIndex)
+                                            .getStringCellValue()) <= Integer.parseInt(value);
+                                } else {
+                                    if (relations.get(0).getType() == Relation.Type.LESS){
+                                        ret = Integer.parseInt(sheet_temp
+                                                .getRow(index)
+                                                .getCell(columnIndex)
+                                                .getStringCellValue()) >= Integer.parseInt(value);
+                                    }
+                                }
+                                break;
+                            }
+                            case "Float":
+                            {
+                                if (relations.get(0).getType() == Relation.Type.GREATER){
+                                    ret = Float.parseFloat(sheet_temp
+                                            .getRow(index)
+                                            .getCell(columnIndex)
+                                            .getStringCellValue()) <= Float.parseFloat(value);
+                                } else {
+                                    if (relations.get(0).getType() == Relation.Type.LESS){
+                                        ret = Float.parseFloat(sheet_temp
+                                                .getRow(index)
+                                                .getCell(columnIndex)
+                                                .getStringCellValue()) >= Float.parseFloat(value);
+                                    }
+                                }
+                                break;
+                            }
+                            case "Date":
+                            {
+                                
+                                System.out.println(new DateType(sheet_temp.getRow(index).getCell(columnIndex).getStringCellValue()) + " vs " + new DateType(value) + " wynik " + new DateType(sheet_temp
+                                            .getRow(index)
+                                            .getCell(columnIndex)
+                                            .getStringCellValue()).compareTo(new DateType(value)));
+                                
+                                if (relations.get(0).getType() == Relation.Type.GREATER){
+                                    ret = new DateType(sheet_temp
+                                            .getRow(index)
+                                            .getCell(columnIndex)
+                                            .getStringCellValue()).compareTo(new DateType(value)) < 0;
+                                } else {
+                                    if (relations.get(0).getType() == Relation.Type.LESS){
+                                        ret = new DateType(sheet_temp
+                                                .getRow(index)
+                                                .getCell(columnIndex)
+                                                .getStringCellValue()).compareTo(new DateType(value)) > 0;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+   
+                    } catch (IOException ex) {
+                        Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
+                } finally {
+                    try {
+                        if (inp != null){
+                            inp.close();
+                        }
+                    } catch (IOException ex) {
+                        Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         }
-        return false;
+        return ret;
     }
 }
