@@ -5,8 +5,11 @@
  */
 package generator;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -29,7 +32,6 @@ public class Column{
     private final Boolean numbers;
     private final List<Relation> relations;
     private final String parameter;
-    
     private final String type;
     
     private static final int NUMBERS = 0;
@@ -37,6 +39,7 @@ public class Column{
     private static final int UPPERCASE= 2;
     
     private Integer lastValue;
+    private List<String> possibleValues;
  
     public Column(String name, String max, String min, Boolean numbers, List<Relation> relations, String type, String parameter){
         this.name = name;
@@ -68,9 +71,22 @@ public class Column{
         this.type = type;
         this.parameter = parameter;
         
-//        if ("Date".equals(type)){
-//            this.dateTest();
-//        }
+        if (this.relations.get(0).getType() == Relation.Type.ONE_OF){
+            possibleValues = new ArrayList();
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(new File(relations.get(0).getDir())));
+                try {
+                    String line = null;
+                    while ((line = reader.readLine()) != null){
+                        possibleValues.add(line);
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
     
     public void Generate(List<HSSFRow> sheet, int index){
@@ -90,88 +106,92 @@ public class Column{
     
     private String randomValue(int index, HSSFSheet sheet) throws TooMuchQuantityException{
         String ret = "";
+        Random generator = new Random();
         if (!(relations.get(0).getType() == Relation.Type.IS)) {
-            Random generator = new Random();
-            while (!isCorrect(ret, index, sheet)){
-                switch (type){
-                    case "Integer":
-                    {
-                        if (parameter.equals("id")){
-                            ret = lastValue.toString();
-                            lastValue++; 
-                        } else {
-                            Integer temp = generator.nextInt(Integer.parseInt(maxValue) - Integer.parseInt(minValue)) + Integer.parseInt(minValue);
-                            ret = temp.toString();
-                        }
-                        break;
-                    }
-                    case "Float":
-                    {
-                        Float temp = generator.nextFloat() *  ( Float.parseFloat(maxValue) - Float.parseFloat(minValue)) + Float.parseFloat(minValue);             
-                        ret = temp.toString();
-                        break;
-                    }
-                    case "String":
-                    {
-                        int length = generator.nextInt(Integer.parseInt(maxValue) - Integer.parseInt(minValue)) + Integer.parseInt(minValue);
-                        for (int i = 0; i < length; i++){
-                            int rand;
-                            if (numbers == true){
-                                int t = generator.nextInt(3);
-                                System.out.println(t);
-                                switch (t){
-                                    case NUMBERS:
-                                    {
-                                        rand = generator.nextInt(10);
-                                        rand += '0';
-                                        break;
-                                    }
-                                    default:
-                                    {
-                                        rand = generator.nextInt(26);
-                                        switch (t){
-                                            case LOWERCASE:
-                                            {
-                                                rand += 'a';
-                                                break;
-                                            }
-                                            case UPPERCASE:
-                                            {
-                                                rand += 'A';
-                                                break;
-                                            }
-                                        }
-                                        break;
-                                    }
-                                }
-                            } else{
-                                int t = generator.nextInt(2) + 1;
-                                rand = generator.nextInt(26);
-                                switch (t){
-                                    case LOWERCASE:
-                                    {
-                                        rand += 'a';
-                                        break;
-                                    }
-                                    case UPPERCASE:
-                                    {
-                                        rand += 'A';
-                                        break;
-                                    }
-                                }      
+            if (!(relations.get(0).getType() == Relation.Type.ONE_OF)){
+                while (!isCorrect(ret, index, sheet)){
+                    switch (type){
+                        case "Integer":
+                        {
+                            if (parameter.equals("id")){
+                                ret = lastValue.toString();
+                                lastValue++; 
+                            } else {
+                                Integer temp = generator.nextInt(Integer.parseInt(maxValue) - Integer.parseInt(minValue)) + Integer.parseInt(minValue);
+                                ret = temp.toString();
                             }
-                            char c = (char) rand;
-                            ret += c;
+                            break;
                         }
-                        break;
-                    }
-                    case "Date" :
-                    {
-                        ret = getNextDate(new DateType(maxValue), new DateType(minValue), generator);
-                        //System.out.println("max " + new DateType(maxValue).toString() + " min " + new DateType(minValue).toString());
-                        break;
+                        case "Float":
+                        {
+                            Float temp = generator.nextFloat() *  ( Float.parseFloat(maxValue) - Float.parseFloat(minValue)) + Float.parseFloat(minValue);             
+                            ret = temp.toString();
+                            break;
+                        }
+                        case "String":
+                        {
+                            int length = generator.nextInt(Integer.parseInt(maxValue) - Integer.parseInt(minValue)) + Integer.parseInt(minValue);
+                            for (int i = 0; i < length; i++){
+                                int rand;
+                                if (numbers == true){
+                                    int t = generator.nextInt(3);
+                                    System.out.println(t);
+                                    switch (t){
+                                        case NUMBERS:
+                                        {
+                                            rand = generator.nextInt(10);
+                                            rand += '0';
+                                            break;
+                                        }
+                                        default:
+                                        {
+                                            rand = generator.nextInt(26);
+                                            switch (t){
+                                                case LOWERCASE:
+                                                {
+                                                    rand += 'a';
+                                                    break;
+                                                }
+                                                case UPPERCASE:
+                                                {
+                                                    rand += 'A';
+                                                    break;
+                                                }
+                                            }
+                                            break;
+                                        }
+                                    }
+                                } else{
+                                    int t = generator.nextInt(2) + 1;
+                                    rand = generator.nextInt(26);
+                                    switch (t){
+                                        case LOWERCASE:
+                                        {
+                                            rand += 'a';
+                                            break;
+                                        }
+                                        case UPPERCASE:
+                                        {
+                                            rand += 'A';
+                                            break;
+                                        }
+                                    }      
+                                }
+                                char c = (char) rand;
+                                ret += c;
+                            }
+                            break;
+                        }
+                        case "Date" :
+                        {
+                            ret = getNextDate(new DateType(maxValue), new DateType(minValue), generator);
+                            //System.out.println("max " + new DateType(maxValue).toString() + " min " + new DateType(minValue).toString());
+                            break;
+                        }
                     }
                 }
+            } else {
+                ret = possibleValues.get(generator.nextInt(possibleValues.size()));
             }
         } else { 
             InputStream inp = null;
