@@ -63,7 +63,7 @@ public class FXMLDocumentController implements Initializable {
    @FXML
     private void handleGenerateAction(ActionEvent event) {
         System.out.println("Generate");
-        String filename = "D:/NewExcelFile.xls" ;
+        String filename = "C:/NewExcelFile.xls" ;
         HSSFWorkbook workbook = new HSSFWorkbook();
         HSSFSheet sheet = workbook.createSheet("FirstSheet"); 
         List<HSSFRow> rList = new ArrayList();
