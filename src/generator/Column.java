@@ -329,13 +329,7 @@ public class Column{
                                 break;
                             }
                             case "Date":
-                            {
-                                
-                                System.out.println(new DateType(sheet_temp.getRow(index).getCell(columnIndex).getStringCellValue()) + " vs " + new DateType(value) + " wynik " + new DateType(sheet_temp
-                                            .getRow(index)
-                                            .getCell(columnIndex)
-                                            .getStringCellValue()).compareTo(new DateType(value)));
-                                
+                            {          
                                 if (relations.get(0).getType() == Relation.Type.GREATER){
                                     ret = new DateType(sheet_temp
                                             .getRow(index)
