@@ -126,8 +126,8 @@ public class DateType implements Comparable<DateType>{
             }
         }
         newDay += tempShift;
-        if (newDay > DAYS_IN_MONTH[newMonth]){
-            newDay -= DAYS_IN_MONTH[newMonth];
+        if (newDay > DAYS_IN_MONTH[newMonth - 1]){
+            newDay -= DAYS_IN_MONTH[newMonth - 1];
             newMonth++;
         }
  
