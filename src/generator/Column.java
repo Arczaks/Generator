@@ -73,18 +73,46 @@ public class Column{
         
         if (this.relations.get(0).getType() == Relation.Type.ONE_OF){
             possibleValues = new ArrayList();
+//            try {
+//                BufferedReader reader = new BufferedReader(new FileReader(new File(relations.get(0).getDir())));
+//                try {
+//                    String line = null;
+//                    while ((line = reader.readLine()) != null){
+//                        possibleValues.add(line);
+//                    }
+//                } catch (IOException ex) {
+//                    Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
+//                }
+//            } catch (FileNotFoundException ex) {
+//                Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+            InputStream inp = null;
             try {
-                BufferedReader reader = new BufferedReader(new FileReader(new File(relations.get(0).getDir())));
+                inp = new FileInputStream(relations.get(0).getDir());
                 try {
-                    String line = null;
-                    while ((line = reader.readLine()) != null){
-                        possibleValues.add(line);
+                    HSSFWorkbook wb = new HSSFWorkbook(inp);
+                    HSSFSheet sheetTemp = wb.getSheetAt(0);
+                    int columnIndex = 0;
+                    for (int i = 0; i < sheetTemp.getRow(0).getLastCellNum(); i++) {
+                        if (sheetTemp.getRow(0).getCell(i).getStringCellValue().equals(relations.get(0).getElement())){
+                            columnIndex = i;
+                            break;
+                        }
+                    }                   
+                    for (int i = 1; i < sheetTemp.getLastRowNum(); i++){
+                        possibleValues.add(sheetTemp.getRow(i).getCell(columnIndex).getStringCellValue());
                     }
                 } catch (IOException ex) {
                     Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                try {
+                    inp.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
     }
@@ -199,16 +227,16 @@ public class Column{
                 inp = new FileInputStream(relations.get(0).getDir());
                 try {
                     HSSFWorkbook wb = new HSSFWorkbook(inp);
-                    HSSFSheet sheet_temp = wb.getSheetAt(0);
+                    HSSFSheet sheetTemp = wb.getSheetAt(0);
                     int columnIndex = 0;
-                    for (int i = 0; i < sheet.getRow(0).getLastCellNum(); i++) {
+                    for (int i = 0; i < sheetTemp.getRow(0).getLastCellNum(); i++) {
                         //System.out.println(" sheet " + sheet.getRow(0).getCell(i).getStringCellValue() + " rel " + relations.get(0).getElement());
-                        if (sheet.getRow(0).getCell(i).getStringCellValue().equals(relations.get(0).getElement())){
+                        if (sheetTemp.getRow(0).getCell(i).getStringCellValue().equals(relations.get(0).getElement())){
                             columnIndex = i;
                             break;
                         }
                     }
-                    ret = sheet.getRow(index).getCell(columnIndex).getStringCellValue();
+                    ret = sheetTemp.getRow(index).getCell(columnIndex).getStringCellValue();
                 } catch (IOException ex) {
                     Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -296,18 +324,18 @@ public class Column{
                     }
                     try {
                         HSSFWorkbook wb;
-                        HSSFSheet sheet_temp;
+                        HSSFSheet sheetTemp;
                         if (inp == null){
-                            sheet_temp = sheet;
+                            sheetTemp = sheet;
                         } else {
                             wb = new HSSFWorkbook(inp); 
-                            sheet_temp = wb.getSheetAt(0);
+                            sheetTemp = wb.getSheetAt(0);
                         }
  
                         int columnIndex = 0;
-                        for (int i = 0; i < sheet_temp.getRow(0).getLastCellNum(); i++) {
+                        for (int i = 0; i < sheetTemp.getRow(0).getLastCellNum(); i++) {
                             //System.out.println(" sheet " + sheet.getRow(0).getCell(i).getStringCellValue() + " rel " + relations.get(0).getElement());
-                            if (sheet_temp.getRow(0).getCell(i).getStringCellValue().equals(relations.get(0).getElement())){
+                            if (sheetTemp.getRow(0).getCell(i).getStringCellValue().equals(relations.get(0).getElement())){
                                 columnIndex = i;
                                 break;
                             }
@@ -317,13 +345,13 @@ public class Column{
                             case "Integer":
                             {
                                 if (relations.get(0).getType() == Relation.Type.GREATER){
-                                    ret = Integer.parseInt(sheet_temp
+                                    ret = Integer.parseInt(sheetTemp
                                             .getRow(index)
                                             .getCell(columnIndex)
                                             .getStringCellValue()) <= Integer.parseInt(value);
                                 } else {
                                     if (relations.get(0).getType() == Relation.Type.LESS){
-                                        ret = Integer.parseInt(sheet_temp
+                                        ret = Integer.parseInt(sheetTemp
                                                 .getRow(index)
                                                 .getCell(columnIndex)
                                                 .getStringCellValue()) >= Integer.parseInt(value);
@@ -334,13 +362,13 @@ public class Column{
                             case "Float":
                             {
                                 if (relations.get(0).getType() == Relation.Type.GREATER){
-                                    ret = Float.parseFloat(sheet_temp
+                                    ret = Float.parseFloat(sheetTemp
                                             .getRow(index)
                                             .getCell(columnIndex)
                                             .getStringCellValue()) <= Float.parseFloat(value);
                                 } else {
                                     if (relations.get(0).getType() == Relation.Type.LESS){
-                                        ret = Float.parseFloat(sheet_temp
+                                        ret = Float.parseFloat(sheetTemp
                                                 .getRow(index)
                                                 .getCell(columnIndex)
                                                 .getStringCellValue()) >= Float.parseFloat(value);
@@ -351,13 +379,13 @@ public class Column{
                             case "Date":
                             {          
                                 if (relations.get(0).getType() == Relation.Type.GREATER){
-                                    ret = new DateType(sheet_temp
+                                    ret = new DateType(sheetTemp
                                             .getRow(index)
                                             .getCell(columnIndex)
                                             .getStringCellValue()).compareTo(new DateType(value)) < 0;
                                 } else {
                                     if (relations.get(0).getType() == Relation.Type.LESS){
-                                        ret = new DateType(sheet_temp
+                                        ret = new DateType(sheetTemp
                                                 .getRow(index)
                                                 .getCell(columnIndex)
                                                 .getStringCellValue()).compareTo(new DateType(value)) > 0;
