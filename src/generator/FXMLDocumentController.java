@@ -159,7 +159,12 @@ public class FXMLDocumentController implements Initializable {
                             .item(0)
                             .getTextContent());
                     
-                    list.add(new  Column(name, max, min, numbers, relations, type, parameter, canBeNull));
+                    Integer nullChance = Integer.parseInt(eElement
+                        .getElementsByTagName("nullChance")
+                        .item(0)
+                        .getTextContent());
+                    
+                    list.add(new  Column(name, max, min, numbers, relations, type, parameter, canBeNull, nullChance));
 
                 }
             }
