@@ -5,11 +5,8 @@
  */
 package generator;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -33,6 +30,8 @@ public class Column{
     private final List<Relation> relations;
     private final String parameter;
     private final String type;
+    private final Boolean canBeNull;
+    private final Integer nullChance;
     
     private static final int NUMBERS = 0;
     private static final int LOWERCASE = 1;
@@ -41,7 +40,7 @@ public class Column{
     private Integer lastValue;
     private List<String> possibleValues;
  
-    public Column(String name, String max, String min, Boolean numbers, List<Relation> relations, String type, String parameter){
+    public Column(String name, String max, String min, Boolean numbers, List<Relation> relations, String type, String parameter, Boolean canBeNull, Integer nullChance){
         this.name = name;
         if (!"Date".equals(type)){
             Float tMax = Float.parseFloat(max);
@@ -70,6 +69,8 @@ public class Column{
         }
         this.type = type;
         this.parameter = parameter;
+        this.canBeNull = canBeNull;
+        this.nullChance = nullChance;
         
         if (this.relations.get(0).getType() == Relation.Type.ONE_OF){
             possibleValues = new ArrayList();
@@ -132,9 +133,14 @@ public class Column{
       
     }
     
-    private String randomValue(int index, HSSFSheet sheet) throws TooMuchQuantityException{
+    private String randomValue(int index, HSSFSheet sheet) throws TooMuchQuantityException{       
         String ret = "";
         Random generator = new Random();
+        if (canBeNull){
+             if (generator.nextInt(100) < nullChance){
+                 return "null";
+             }
+        }
         if (!(relations.get(0).getType() == Relation.Type.IS)) {
             if (!(relations.get(0).getType() == Relation.Type.ONE_OF)){
                 while (!isCorrect(ret, index, sheet)){
@@ -266,6 +272,8 @@ public class Column{
                 + "max value: " + maxValue + "\n"
                 + "min value: " + minValue + "\n"
                 + "numbers? " + numbers + "\n"
+                + "canBeNull? " + canBeNull + "\n"
+                + "nullChance: " + nullChance + "\n"
                 + "parameter: " + parameter + "\n"
                 + relations.toString();
     }
