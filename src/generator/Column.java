@@ -5,6 +5,7 @@
  */
 package generator;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -17,7 +18,8 @@ import java.util.logging.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
-
+import org.jopendocument.dom.spreadsheet.Sheet;
+import org.jopendocument.dom.spreadsheet.SpreadSheet;
 /**
  *
  * @author Archax
@@ -74,39 +76,32 @@ public class Column{
         
         if (this.relations.get(0).getType() == Relation.Type.ONE_OF){
             possibleValues = new ArrayList();
-            InputStream inp = null;
-            try {
-                inp = new FileInputStream(relations.get(0).getDir());
-                try {
-                    HSSFWorkbook wb = new HSSFWorkbook(inp);
-                    HSSFSheet sheetTemp = wb.getSheetAt(0);
-                    int columnIndex = 0;
-                    for (int i = 0; i < sheetTemp.getRow(0).getLastCellNum(); i++) {
-                        if (sheetTemp.getRow(0).getCell(i).getStringCellValue().equals(relations.get(0).getElement())){
-                            columnIndex = i;
-                            break;
+              try {
+                   Sheet sheet = SpreadSheet.createFromFile(new File(relations.get(0).getDir())).getSheet(0);
+                   int columnIndex = 0;
+                        for (int i = 0; i < sheet.getColumnCount(); i++) {
+                            if (sheet.getCellAt(i, 0).getValue().equals(relations.get(0).getElement())){
+                                columnIndex = i;
+                                break;
+                            }
+                        }                   
+                        for (int i = 1; i < sheet.getRowCount(); i++){
+                            possibleValues.add(sheet.getCellAt(columnIndex, i).getValue().toString());
                         }
-                    }                   
-                    for (int i = 1; i < sheetTemp.getLastRowNum(); i++){
-                        possibleValues.add(sheetTemp.getRow(i).getCell(columnIndex).getStringCellValue());
-                    }
-                } catch (IOException ex) {
-                    Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            } catch (FileNotFoundException ex) {
+              } catch (FileNotFoundException ex) { 
                 Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
-            } finally {
-                try {
-                    inp.close();
-                } catch (IOException ex) {
-                    Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
-                }
+            } catch (IOException ex) {
+                Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception ex) {
+                Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
     
     public void Generate(List<HSSFRow> sheet, int index){
-        lastValue = Integer.parseInt(minValue);
+        if (parameter.equals("id")){
+            lastValue = Integer.parseInt(minValue);
+        }
         sheet.get(0).createCell(index).setCellValue(name);
         sheet.forEach((c) -> {
             if (c.getRowNum() != 0){
@@ -124,7 +119,9 @@ public class Column{
         String ret = "";
         Random generator = new Random();
         if (canBeNull){
-             if (generator.nextInt(100) < nullChance){
+            int t = generator.nextInt(100);
+            System.out.println("r " + t);
+             if (t < nullChance){
                  return "null";
              }
         }
