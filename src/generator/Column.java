@@ -74,19 +74,6 @@ public class Column{
         
         if (this.relations.get(0).getType() == Relation.Type.ONE_OF){
             possibleValues = new ArrayList();
-//            try {
-//                BufferedReader reader = new BufferedReader(new FileReader(new File(relations.get(0).getDir())));
-//                try {
-//                    String line = null;
-//                    while ((line = reader.readLine()) != null){
-//                        possibleValues.add(line);
-//                    }
-//                } catch (IOException ex) {
-//                    Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-//            } catch (FileNotFoundException ex) {
-//                Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
-//            }
             InputStream inp = null;
             try {
                 inp = new FileInputStream(relations.get(0).getDir());
@@ -119,7 +106,7 @@ public class Column{
     }
     
     public void Generate(List<HSSFRow> sheet, int index){
-        lastValue = 1;
+        lastValue = Integer.parseInt(minValue);
         sheet.get(0).createCell(index).setCellValue(name);
         sheet.forEach((c) -> {
             if (c.getRowNum() != 0){
