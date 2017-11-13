@@ -86,7 +86,9 @@ public class Column{
                             }
                         }                   
                         for (int i = 1; i < sheet.getRowCount(); i++){
-                            possibleValues.add(sheet.getCellAt(columnIndex, i).getValue().toString());
+                            if (!"".equals(sheet.getCellAt(columnIndex, i).getValue().toString())){
+                                possibleValues.add(sheet.getCellAt(columnIndex, i).getValue().toString());
+                            }
                         }
               } catch (FileNotFoundException ex) { 
                 Logger.getLogger(Column.class.getName()).log(Level.SEVERE, null, ex);
